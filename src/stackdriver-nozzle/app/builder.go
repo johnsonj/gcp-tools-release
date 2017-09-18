@@ -89,12 +89,12 @@ func (a *App) newConsumer(ctx context.Context) (*nozzle.Nozzle, error) {
 	loggingEvents := strings.Split(a.c.LoggingEvents, ",")
 	metricEvents := strings.Split(a.c.MonitoringEvents, ",")
 
-	logSink, err := nozzle.NewFilterSink(loggingEvents, a.newLogSink())
+	logSink, err := nozzle.NewFilterSink(loggingEvents, nozzle.NewSinkBuffer(a.newLogSink()))
 	if err != nil {
 		return nil, err
 	}
 
-	metricSink, err := nozzle.NewFilterSink(metricEvents, a.newMetricSink(ctx))
+	metricSink, err := nozzle.NewFilterSink(metricEvents, nozzle.NewSinkBuffer(a.newMetricSink(ctx)))
 	if err != nil {
 		return nil, err
 	}

@@ -63,7 +63,6 @@ func (n *Nozzle) Start(firehose cloudfoundry.Firehose) (errs chan error, fhErrs 
 		for {
 			select {
 			case envelope := <-messages:
-				n.Heartbeater.Increment("nozzle.events")
 				err := n.handleEvent(envelope)
 				if err != nil {
 					errs <- err
@@ -92,12 +91,15 @@ func (n *Nozzle) Stop() error {
 }
 
 func (n *Nozzle) handleEvent(envelope *events.Envelope) error {
+	n.Heartbeater.Increment("nozzle.events")
 	if err := n.LogSink.Receive(envelope); err != nil {
+		n.Heartbeater.Increment("nozzle.log_sink.error")
 		return err
 	}
 
 	if isMetric(envelope) {
 		if err := n.MetricSink.Receive(envelope); err != nil {
+			n.Heartbeater.Increment("nozzle.metric_sink.error")
 			return err
 		}
 	}
