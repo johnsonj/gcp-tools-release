@@ -37,7 +37,7 @@ ssh -4 -D 5000 -fNC bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o Stric
 export BOSH_ALL_PROXY=socks5://localhost:5000
 
 echo "Using BOSH CLI version..."
-bosh2 version
+bosh2 --version
 export BOSH_CLIENT=${bosh_user}
 export BOSH_CLIENT_SECRET=${bosh_password}
 export BOSH_ENVIRONMENT=https://${bosh_director_address}:25555
