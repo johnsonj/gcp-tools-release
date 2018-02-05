@@ -51,10 +51,11 @@ echo "Uploading nozzle release..."
 bosh2 upload-release stackdriver-tools-artifacts/*.tgz
 
 nozzle_manifest_name=stackdriver-nozzle.yml
+nozzle_deployment_name=stackdriver-nozzle-ci
 cat > ${nozzle_manifest_name} <<EOF
 ---
 
-name: stackdriver-nozzle-ci
+name: ${nozzle_deployment_name}
 
 releases:
 - name: stackdriver-tools
@@ -149,7 +150,7 @@ update:
 
 EOF
 
-bosh2 -n deploy ${nozzle_manifest_name}
+bosh2 -n deploy ${nozzle_manifest_name} -d ${nozzle_deployment_name}
 
 # Move release and its SHA256
 mv stackdriver-tools-artifacts/*.tgz candidate/latest.tgz
