@@ -33,6 +33,7 @@ chmod 700 /tmp/${ssh_user}.key
 
 echo "Connecting to SSH bastion..."
 ssh bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o StrictHostKeyChecking=no -L 25555:${bosh_director_address}:25555 -nNT &
+ssh bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o StrictHostKeyChecking=no -L 8443:${bosh_director_address}:8443 -nNT &
 
 echo "Using BOSH CLI version..."
 bosh version
