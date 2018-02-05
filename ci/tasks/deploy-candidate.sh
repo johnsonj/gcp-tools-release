@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 source stackdriver-tools/ci/tasks/utils.sh
 
@@ -8,6 +8,7 @@ source stackdriver-tools/ci/tasks/utils.sh
 check_param bosh_director_address
 check_param bosh_user
 check_param bosh_password
+check_param bosh_ca_cert
 
 # CF settings
 check_param cf_api_url
@@ -32,26 +33,28 @@ echo -e "${ssh_key}" > /tmp/${ssh_user}.key
 chmod 700 /tmp/${ssh_user}.key
 
 echo "Connecting to SSH bastion..."
-ssh bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o StrictHostKeyChecking=no -L 25555:${bosh_director_address}:25555 -nNT &
-ssh bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o StrictHostKeyChecking=no -L 8443:${bosh_director_address}:8443 -nNT &
+ssh -4 -D 5000 -fNC bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o StrictHostKeyChecking=no
+export BOSH_ALL_PROXY=socks5://localhost:5000
 
 echo "Using BOSH CLI version..."
-bosh version
+bosh2 version
+export BOSH_CLIENT=${bosh_user}
+export BOSH_CLIENT_SECRET=${bosh_password}
+export BOSH_ENVIRONMENT=https://${bosh_director_address}:25555
+export BOSH_CA_CERT=${bosh_ca_cert}
 
 echo "Targeting BOSH director..."
-bosh -n target localhost
-bosh login ${bosh_user} ${bosh_password}
-director_uuid=$(bosh status --uuid)
+bosh2 login -n
+bosh2 env
 
 echo "Uploading nozzle release..."
-bosh upload release stackdriver-tools-artifacts/*.tgz
+bosh2 upload-release stackdriver-tools-artifacts/*.tgz
 
 nozzle_manifest_name=stackdriver-nozzle.yml
 cat > ${nozzle_manifest_name} <<EOF
 ---
 
 name: stackdriver-nozzle-ci
-director_uuid: ${director_uuid}
 
 releases:
 - name: stackdriver-tools
@@ -59,7 +62,7 @@ releases:
 
 jobs:
 - name: stackdriver-nozzle
-  instances: 3
+  instances: 1
   networks:
     - name: private
   resource_pool: common
@@ -146,8 +149,7 @@ update:
 
 EOF
 
-bosh deployment ${nozzle_manifest_name}
-bosh -n deploy
+bosh2 -n deploy ${nozzle_manifest_name}
 
 # Move release and its SHA256
 mv stackdriver-tools-artifacts/*.tgz candidate/latest.tgz
