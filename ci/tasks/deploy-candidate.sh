@@ -32,10 +32,6 @@ echo "Configuring SSH"
 echo -e "${ssh_key}" > /tmp/${ssh_user}.key
 chmod 700 /tmp/${ssh_user}.key
 
-echo "Configuring credentials"
-echo -e "${cf_service_account_json}" > /tmp/service_account.json
-chmod 700 /tmp/service_account.json
-
 echo "Connecting to SSH bastion..."
 ssh -4 -D 5000 -fNC bosh@${ssh_bastion_address} -i /tmp/${ssh_user}.key -o StrictHostKeyChecking=no
 export BOSH_ALL_PROXY=socks5://localhost:5000
@@ -75,7 +71,7 @@ bosh2 deploy -n manifests/stackdriver-tools.yml \
             --var=firehose_password=${firehose_password} \
             --var=skip_ssl=true \
             --var=gcp_project_id=${cf_project_id} \
-            --var-file=gcp_service_account_json=/tmp/service_account.json
+            --var=gcp_service_account_json=${cf_service_account_json}
 
 popd
 
