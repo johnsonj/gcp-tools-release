@@ -80,7 +80,7 @@ To use any of the jobs in this BOSH release, first upload it to your BOSH
 director:
 
 ```
-bosh upload-release https://storage.googleapis.com/bosh-gcp/beta/stackdriver-tools/latest.tgz
+bosh2 upload-release https://storage.googleapis.com/bosh-gcp/beta/stackdriver-tools/latest.tgz
 ```
 
 The [stackdriver-tools.yml][tools-yaml] sample [BOSH 2.0 manifest][bosh20] illustrates how to
