@@ -54,6 +54,7 @@ bosh2 env
 echo "Uploading nozzle release..."
 bosh2 upload-release stackdriver-tools-artifacts/*.tgz
 
+pushd stackdriver-tools
 echo "Updating cloud config"
 bosh2 update-cloud-config -n manifests/cloud-config-gcp.yml \
           -v zone=${google_zone} \
@@ -65,6 +66,8 @@ bosh2 update-cloud-config -n manifests/cloud-config-gcp.yml \
           -v "reserved=[10.0.0.1-10.0.0.10]"
 
 bosh2 cloud-config
+
+echo "Deploying nozzle release"
 bosh2 deploy -n manifests/stackdriver-tools.yml \
             -d stackdriver-nozzle \
             --var=firehose_endpoint=${cf_api_url} \
@@ -73,6 +76,8 @@ bosh2 deploy -n manifests/stackdriver-tools.yml \
             --var=skip_ssl=true \
             --var=gcp_project_id=${cf_project_id} \
             --var-file=gcp_service_account_json=/tmp/service_account.json
+
+popd
 
 # Move release and its SHA256
 mv stackdriver-tools-artifacts/*.tgz candidate/latest.tgz
